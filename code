@@ -1,0 +1,107 @@
+#include <AccelStepper.h>
+#include <Servo.h>
+
+// --- Stepper motor pins (CNC Shield Default) ---
+#define X_STEP_PIN 2
+#define X_DIR_PIN 5
+#define Y_STEP_PIN 3
+#define Y_DIR_PIN 6
+
+#define ENABLE_PIN 8
+#define SERVO_PIN 11  // Z-axis servo
+
+// --- Stepper configuration ---
+AccelStepper stepperX(AccelStepper::DRIVER, X_STEP_PIN, X_DIR_PIN);
+AccelStepper stepperY(AccelStepper::DRIVER, Y_STEP_PIN, Y_DIR_PIN);
+Servo penServo;
+
+// --- Machine settings ---
+float scale = 1.0;     // scaling factor for coordinates
+int penUp = 90;         // servo angle for pen up
+int penDown = 50;       // servo angle for pen down
+int feedrate = 600;     // default feedrate
+
+// --- Position tracking ---
+float currentX = 0.0;
+float currentY = 0.0;
+
+// --- Function to move pen to (x, y) ---
+void moveTo(float x, float y) {
+  long targetX = (long)(x * scale);
+  long targetY = (long)(y * scale);
+  stepperX.moveTo(targetX);
+  stepperY.moveTo(targetY);
+
+  while (stepperX.distanceToGo() != 0 || stepperY.distanceToGo() != 0) {
+    stepperX.run();
+    stepperY.run();
+  }
+
+  currentX = x;
+  currentY = y;
+}
+
+// --- Function to lift or drop pen ---
+void penUpFunc() {
+  penServo.write(penUp);
+  delay(300);
+}
+
+void penDownFunc() {
+  penServo.write(penDown);
+  delay(300);
+}
+
+// --- Parse G-code line ---
+void processGcode(String line) {
+  line.trim();
+
+  if (line.startsWith("G00") || line.startsWith("G0")) {
+    float x = currentX, y = currentY;
+    if (line.indexOf('X') > 0) x = line.substring(line.indexOf('X') + 1).toFloat();
+    if (line.indexOf('Y') > 0) y = line.substring(line.indexOf('Y') + 1).toFloat();
+    penUpFunc();
+    moveTo(x, y);
+  }
+
+  else if (line.startsWith("G01") || line.startsWith("G1")) {
+    float x = currentX, y = currentY;
+    if (line.indexOf('X') > 0) x = line.substring(line.indexOf('X') + 1).toFloat();
+    if (line.indexOf('Y') > 0) y = line.substring(line.indexOf('Y') + 1).toFloat();
+    penDownFunc();
+    moveTo(x, y);
+  }
+
+  else if (line.startsWith("M300")) { // Pen up/down
+    if (line.indexOf('S') > 0) {
+      int s = line.substring(line.indexOf('S') + 1).toInt();
+      if (s > 0) penDownFunc();
+      else penUpFunc();
+    }
+  }
+}
+
+// --- Setup ---
+void setup() {
+  Serial.begin(115200);
+  stepperX.setMaxSpeed(1000);
+  stepperY.setMaxSpeed(1000);
+  stepperX.setAcceleration(500);
+  stepperY.setAcceleration(500);
+
+  pinMode(ENABLE_PIN, OUTPUT);
+  digitalWrite(ENABLE_PIN, LOW);
+
+  penServo.attach(SERVO_PIN);
+  penUpFunc();
+
+  Serial.println("Handwriting Machine Ready. Send G-code:");
+}
+
+// --- Main loop ---
+void loop() {
+  if (Serial.available() > 0) {
+    String line = Serial.readStringUntil('\n');
+    processGcode(line);
+  }
+}
