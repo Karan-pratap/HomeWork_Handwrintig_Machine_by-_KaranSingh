@@ -1,0 +1,69 @@
+# Home Work Handwriting Machine
+
+This DIY Arduino-based handwriting machine automatically writes text on paper, simulating human handwriting. This project uses CNC Shield with A4988 stepper drivers for X and Y axis motion and a servo motor for pen up/down control on the Z-axis. The system interprets G-code commands to reproduce text, drawings, or signatures accurately on paper, making it perfect for learning about CNC motion control, robotics, and automation.
+
+---
+
+## Features
+
+* Automatically writes text or drawings on paper
+* Powered by Arduino Uno with CNC Shield v3
+* Uses A4988 drivers to control stepper motors for X and Y axes
+* Servo motor controls the Z-axis for pen up/down movement
+* Compatible with G-code files generated from Inkscape or other software
+* Runs using a G-code sender or serial-based G-code runner script
+* Fully open-source and easy to assemble
+
+---
+
+## Components Used
+
+| Component                | Quantity | Description                                 |
+| ------------------------ | -------- | ------------------------------------------- |
+| Arduino Uno              | 1        | Main controller board                       |
+| CNC Shield v3            | 1        | Interface for stepper and servo connections |
+| A4988 Stepper Drivers    | 2        | For controlling X and Y axis motors        |
+| NEMA 17 Stepper Motors   | 2        | Provide motion for X and Y axes            |
+| Servo Motor (SG90/MG90S) | 1        | Controls pen up/down movement (Z-axis)     |
+| Power Supply             | 1        | 12V DC recommended                          |
+| Frame/Plotter Structure  | 1        | 3D printed or acrylic/wood base            |
+| Pen Holder               | 1        | Mounted on servo for writing                |
+
+---
+
+## Working Principle
+
+1. Load the G-code file (generated from a text or drawing) into a G-code sender.
+2. The Arduino Uno, loaded with G-code interpreter firmware, reads the commands.
+3. Stepper motors move the pen along the X and Y axes according to the G-code path.
+4. The servo motor lifts and drops the pen to mimic handwriting.
+
+---
+
+## Software Setup
+
+* Firmware: Arduino G-code interpreter (like GRBL or custom code for G-code runner)
+* G-code Generator: [Inkscape](https://inkscape.org/) with G-code extension or online text-to-G-code converters
+* G-code Sender: Universal G-code Sender (UGS) or Python-based G-code runner
+
+
+## Circuit Overview
+
+* X-axis stepper → CNC Shield X driver (A4988)
+* Y-axis stepper → CNC Shield Y driver (A4988)
+* Servo (Z-axis) → CNC Shield servo pin (D11 by default)
+* Power Supply → 12V DC input to CNC Shield
+
+---
+
+## Applications
+
+* Automated handwriting for assignments
+* CNC plotter for drawing and art
+* Educational robotics project
+* DIY pen plotter
+
+
+## Acknowledgements
+
+Special thanks to the Arduino and GRBL communities for their open-source contributions and documentation.
